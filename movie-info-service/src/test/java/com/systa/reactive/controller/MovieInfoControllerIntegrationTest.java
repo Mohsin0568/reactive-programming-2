@@ -14,7 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -69,4 +69,97 @@ class MovieInfoControllerIntegrationTest {
 
         // Then
     }
+
+    @Test
+    void testGetAllMovies(){
+        // Given
+
+        // When
+        webTestClient
+                .get()
+                .uri(MOVIES_INFO_URL)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(MovieInfo.class)
+                .hasSize(3);
+
+        // Then
+    }
+
+    @Test
+    void testGetMovieById(){
+
+        // Given
+        var movieInfoId = "abc";
+
+        // When
+//        webTestClient
+//                .get()
+//                .uri(MOVIES_INFO_URL+"/{id}", movieInfoId)
+//                .exchange()
+//                .expectStatus()
+//                .is2xxSuccessful()
+//                .expectBody(MovieInfo.class)
+//                .consumeWith(movieInfoEntityExchangeResult -> {
+//                    var movieInfo = movieInfoEntityExchangeResult.getResponseBody();
+//                    assertNotNull(movieInfo);
+//                });
+
+        webTestClient
+                .get()
+                .uri(MOVIES_INFO_URL+"/{id}", movieInfoId)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody()
+                .jsonPath("$.name").isEqualTo("Dark Knight Rises");
+
+        // Then
+
+    }
+
+    @Test
+    void testUpdateMovieInfo(){
+        // Given
+        var movieInfo = new MovieInfo(null, "Dark Knight Rises1",
+                2014, List.of("Christian Bale", "Tom Hardy"), LocalDate.parse("2012-07-20"));
+        var movieInfoId = "abc";
+
+        // When
+        webTestClient
+                .put()
+                .uri(MOVIES_INFO_URL+"/{id}", movieInfoId)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(MovieInfo.class)
+                .consumeWith(movieInfoEntityExchangeResult -> {
+                    var expectedMovieInfo = movieInfoEntityExchangeResult.getResponseBody();
+                    assert expectedMovieInfo != null;
+                    assert expectedMovieInfo.getMovieInfoId() != null;
+                    assert expectedMovieInfo.getName().equals("Dark Knight Rises1");
+                    assert expectedMovieInfo.getYear() == 2014;
+                });
+
+        // Then
+    }
+
+    @Test
+    void testDeleteMovieById(){
+        // Given
+        var movieInfoId = "abc";
+
+        // When
+        webTestClient
+                .delete()
+                .uri(MOVIES_INFO_URL+"/{id}", movieInfoId)
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+
+        // Then
+    }
+
 }
