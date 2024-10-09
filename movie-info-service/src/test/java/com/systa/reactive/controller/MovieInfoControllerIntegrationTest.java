@@ -120,6 +120,24 @@ class MovieInfoControllerIntegrationTest {
     }
 
     @Test
+    void testGetMovieByIdNotFound(){
+
+        // Given
+        var movieInfoId = "dsdfd";
+
+        // When
+        webTestClient
+                .get()
+                .uri(MOVIES_INFO_URL+"/{id}", movieInfoId)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
+
+        // Then
+
+    }
+
+    @Test
     void testUpdateMovieInfo(){
         // Given
         var movieInfo = new MovieInfo(null, "Dark Knight Rises1",
@@ -142,6 +160,25 @@ class MovieInfoControllerIntegrationTest {
                     assert expectedMovieInfo.getName().equals("Dark Knight Rises1");
                     assert expectedMovieInfo.getYear() == 2014;
                 });
+
+        // Then
+    }
+
+    @Test
+    void testUpdateMovieInfoNotFound(){
+        // Given
+        var movieInfo = new MovieInfo(null, "Dark Knight Rises1",
+                2014, List.of("Christian Bale", "Tom Hardy"), LocalDate.parse("2012-07-20"));
+        var movieInfoId = "degdf";
+
+        // When
+        webTestClient
+                .put()
+                .uri(MOVIES_INFO_URL+"/{id}", movieInfoId)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
 
         // Then
     }

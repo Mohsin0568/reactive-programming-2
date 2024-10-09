@@ -5,6 +5,7 @@ import com.systa.reactive.service.MovieInfoService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,13 +29,18 @@ public class MovieInfoController {
     }
 
     @GetMapping("/{id}")
-    public Mono<MovieInfo> getMovieById(final @PathVariable String id){
-        return movieInfoService.getMovieById(id);
+    public Mono<ResponseEntity<MovieInfo>> getMovieById(final @PathVariable String id){
+        return movieInfoService.getMovieById(id)
+                .map(ResponseEntity.ok() :: body)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
     @PutMapping("/{id}")
-    public Mono<MovieInfo> updateMovieInfo(final @RequestBody MovieInfo movieInfo, final @PathVariable String id){
-        return movieInfoService.updateMovieInfo(movieInfo, id);
+    public Mono<ResponseEntity<MovieInfo>> updateMovieInfo(final @RequestBody MovieInfo movieInfo, final @PathVariable String id){
+        return movieInfoService.updateMovieInfo(movieInfo, id)
+                .map(ResponseEntity.ok() :: body)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+
     }
 
     @DeleteMapping("/{id}")
