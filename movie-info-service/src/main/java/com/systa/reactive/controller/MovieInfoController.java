@@ -2,6 +2,7 @@ package com.systa.reactive.controller;
 
 import com.systa.reactive.entity.MovieInfo;
 import com.systa.reactive.service.MovieInfoService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class MovieInfoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<MovieInfo> createMovieInfo(final @RequestBody MovieInfo movieInfo){
+    public Mono<MovieInfo> createMovieInfo(final @RequestBody @Valid MovieInfo movieInfo){
         return movieInfoService.createMovieInfo(movieInfo);
     }
 

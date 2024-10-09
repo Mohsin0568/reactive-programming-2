@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 
@@ -101,6 +101,31 @@ public class MovieInfoControllerUnitTest {
                     assert actualMovieInfo != null;
                     assert actualMovieInfo.getMovieInfoId() != null;
                     assertEquals("mockId", actualMovieInfo.getMovieInfoId());
+                });
+
+        // Then
+    }
+
+    @Test
+    void testCreateMovieInfoValidation(){
+        // Given
+        var movieInfo = new MovieInfo(null, "",
+                -2005, List.of(), LocalDate.parse("2005-06-15"));
+
+        // When
+        webTestClient
+                .post()
+                .uri(MOVIES_INFO_URL)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(String.class)
+                .consumeWith(movieInfoEntityExchangeResult -> {
+                    var actualMovieInfo = movieInfoEntityExchangeResult.getResponseBody();
+                    assertNotNull(actualMovieInfo);
+                    assertTrue(actualMovieInfo.contains("movieInfo.name should not be null"));
+                    assertTrue(actualMovieInfo.contains("movieInfo.year should be a positive value"));
                 });
 
         // Then

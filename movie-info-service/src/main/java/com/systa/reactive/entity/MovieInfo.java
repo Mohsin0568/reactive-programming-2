@@ -1,5 +1,7 @@
 package com.systa.reactive.entity;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,8 +19,10 @@ public class MovieInfo {
 
     @Id
     private String movieInfoId;
+    @NotBlank(message = "movieInfo.name should not be null")
     private String name;
+    @Positive(message = "movieInfo.year should be a positive value")
     private int year;
-    private List<String> cast;
+    private List<@NotBlank(message = "atlease one value should be provided for cast") String> cast;
     private LocalDate releaseDate;
 }
