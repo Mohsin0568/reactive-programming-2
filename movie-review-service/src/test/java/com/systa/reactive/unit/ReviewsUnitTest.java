@@ -1,6 +1,7 @@
 package com.systa.reactive.unit;
 
 import com.systa.reactive.domain.Review;
+import com.systa.reactive.exception.GlobalErrorHandler;
 import com.systa.reactive.handler.ReviewHandler;
 import com.systa.reactive.repository.ReviewRepository;
 import com.systa.reactive.router.ReviewRouter;
@@ -16,7 +17,7 @@ import reactor.core.publisher.Mono;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 @WebFluxTest
-@ContextConfiguration(classes = {ReviewRouter.class, ReviewHandler.class})
+@ContextConfiguration(classes = {ReviewRouter.class, ReviewHandler.class, GlobalErrorHandler.class})
 @AutoConfigureWebTestClient
 class ReviewsUnitTest {
 
@@ -50,6 +51,25 @@ class ReviewsUnitTest {
                     assertNotNull(savedReview.getReviewId());
                     assertEquals("Very Nice Movie", savedReview.getComment());
                 });
+
+        // Then
+    }
+
+    @Test
+    void testAddReview_validation(){
+        // Given
+        var review = new Review(null, null, "Very Nice Movie", -4.5D);
+        when(reviewRepository.save(review))
+                .thenReturn(Mono.just(new Review("abc", 1L, "Very Nice Movie", 4.5D)));
+
+        // When
+        webTestClient
+                .post()
+                .uri(REVIEW_URL)
+                .bodyValue(review)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
 
         // Then
     }
