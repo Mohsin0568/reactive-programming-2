@@ -92,12 +92,39 @@ public class ReviewControllerTest {
         // When
         webTestClient
                 .put()
-                .uri(REVIEW_URL+"/id", reviewId)
+                .uri(REVIEW_URL+"/{id}", reviewId)
                 .bodyValue(review)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful()
-                .expectBody(Review.class);
+                .expectBody(Review.class)
+                .consumeWith(reviewEntityExchangeResult -> {
+                    var updatedReview = reviewEntityExchangeResult.getResponseBody();
+
+                    assert updatedReview != null;
+                    assertEquals("Very Very Nice Movie", updatedReview.getComment());
+                    assertEquals(5.0D, updatedReview.getRating());
+                });
+
+        // Then
+    }
+
+    @Test
+    void testUpdateReview_idNotFound(){
+        // Given
+        var review = new Review("test", 2L, "Very Very Nice Movie", 5.0D);
+        var reviewId = "123";
+
+        // When
+        webTestClient
+                .put()
+                .uri(REVIEW_URL+"/{id}", reviewId)
+                .bodyValue(review)
+                .exchange()
+                .expectStatus()
+                .isNoContent()
+                .expectBody(String.class)
+                .isEqualTo("Review not found with the given review id 123");
 //                .consumeWith(reviewEntityExchangeResult -> {
 //                    var updatedReview = reviewEntityExchangeResult.getResponseBody();
 //
@@ -117,7 +144,7 @@ public class ReviewControllerTest {
         // When
         webTestClient
                 .delete()
-                .uri(REVIEW_URL+"/id", reviewId)
+                .uri(REVIEW_URL+"/{id}", reviewId)
                 .exchange()
                 .expectStatus()
                 .isNoContent();

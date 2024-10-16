@@ -2,6 +2,7 @@ package com.systa.reactive.handler;
 
 import com.systa.reactive.domain.Review;
 import com.systa.reactive.exception.ReviewDataException;
+import com.systa.reactive.exception.ReviewNotFoundException;
 import com.systa.reactive.repository.ReviewRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -58,7 +59,8 @@ public class ReviewHandler {
     public Mono<ServerResponse> updateReview(final ServerRequest serverRequest){
         var reviewId = serverRequest.pathVariable("id");
 
-        var existingReview = reviewRepository.findById(reviewId);
+        var existingReview = reviewRepository.findById(reviewId)
+                .switchIfEmpty(Mono.error(new ReviewNotFoundException("Review not found with the given review id " + reviewId)));
 
         return existingReview.flatMap(review -> serverRequest
                 .bodyToMono(Review.class)

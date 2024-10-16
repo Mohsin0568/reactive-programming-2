@@ -22,6 +22,10 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
             exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
             return exchange.getResponse().writeWith(Mono.just(dataBuffer));
         }
+        if(ex instanceof ReviewNotFoundException){
+            exchange.getResponse().setStatusCode(HttpStatus.NO_CONTENT);
+            return exchange.getResponse().writeWith(Mono.just(dataBuffer));
+        }
 
         exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         return exchange.getResponse().writeWith(Mono.just(dataBuffer));
