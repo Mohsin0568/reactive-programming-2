@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active:
+      - local
+
+restClient:
+  movieInfoUrl: http://localhost:8080/v1/moviesInfo
+  movieReviewUrl: http://localhost:8081/v1/review
+
+server:
+  port: 8082
