@@ -2,8 +2,12 @@ package com.systa.reactive.util;
 
 import com.systa.reactive.domain.MovieInfo;
 import com.systa.reactive.domain.Review;
+import com.systa.reactive.exceptions.MoviesInfoClientException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -11,6 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public class RestClient {
 
     private final WebClient webClient;
@@ -33,6 +38,23 @@ public class RestClient {
                 .get()
                 .uri(url, id)
                 .retrieve()
+                .onStatus(HttpStatusCode :: is4xxClientError, clientResponse -> {
+                    log.error("Received client exception while connecting to movie info service {}",
+                            clientResponse.statusCode().value());
+                    if(clientResponse.statusCode().value() == HttpStatus.NOT_FOUND.value()){
+                        return Mono.error(
+                                new MoviesInfoClientException
+                                        ("MovieInfo not found with id " + id, clientResponse.statusCode().value()));
+                    }
+                    else{
+                        return clientResponse.bodyToMono(String.class)
+                                .flatMap(responseMessage -> {
+                                    return Mono.error(
+                                            new MoviesInfoClientException(responseMessage, clientResponse.statusCode().value()));
+                                });
+                    }
+
+                })
                 .bodyToMono(MovieInfo.class)
                 .log();
     }

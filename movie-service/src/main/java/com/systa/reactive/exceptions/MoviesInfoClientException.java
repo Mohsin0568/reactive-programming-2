@@ -8,7 +8,7 @@ public class MoviesInfoClientException extends RuntimeException{
     private final String message;
     private final Integer statusCode;
 
-    MoviesInfoClientException(final String message, final Integer statusCode){
+    public MoviesInfoClientException(final String message, final Integer statusCode){
         super(message);
         this.message = message;
         this.statusCode = statusCode;

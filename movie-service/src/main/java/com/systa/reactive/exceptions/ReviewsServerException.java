@@ -7,7 +7,7 @@ public class ReviewsServerException  extends RuntimeException{
 
     private final String message;
 
-    ReviewsServerException(final String message){
+    public ReviewsServerException(final String message){
         super(message);
         this.message = message;
     }
