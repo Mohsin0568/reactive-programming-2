@@ -3,6 +3,9 @@ package com.systa.reactive.util;
 import com.systa.reactive.domain.MovieInfo;
 import com.systa.reactive.domain.Review;
 import com.systa.reactive.exceptions.MoviesInfoClientException;
+import com.systa.reactive.exceptions.MoviesInfoServerException;
+import com.systa.reactive.exceptions.ReviewsClientException;
+import com.systa.reactive.exceptions.ReviewsServerException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +58,12 @@ public class RestClient {
                     }
 
                 })
+                .onStatus(HttpStatusCode :: is5xxServerError, clientResponse -> {
+                    log.error("Received server exception while connecting to movie info service {}",
+                            clientResponse.statusCode().value());
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseMessage -> Mono.error(new MoviesInfoServerException("Exception in movieService " + responseMessage)));
+                })
                 .bodyToMono(MovieInfo.class)
                 .log();
     }
@@ -69,6 +78,27 @@ public class RestClient {
                 .get()
                 .uri(url)
                 .retrieve()
+                .onStatus(HttpStatusCode :: is4xxClientError, clientResponse -> {
+                    log.error("Received client exception while connecting to review service {}",
+                            clientResponse.statusCode().value());
+                    if(clientResponse.statusCode().value() == HttpStatus.NOT_FOUND.value()){
+                        return Mono.empty();
+                    }
+                    else{
+                        return clientResponse.bodyToMono(String.class)
+                                .flatMap(responseMessage -> {
+                                    return Mono.error(
+                                            new ReviewsClientException(responseMessage, clientResponse.statusCode().value()));
+                                });
+                    }
+
+                })
+                .onStatus(HttpStatusCode :: is5xxServerError, clientResponse -> {
+                    log.error("Received server exception while connecting to review service {}",
+                            clientResponse.statusCode().value());
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseMessage -> Mono.error(new ReviewsServerException("Exception in movieService " + responseMessage)));
+                })
                 .bodyToFlux(Review.class)
                 .log();
     }

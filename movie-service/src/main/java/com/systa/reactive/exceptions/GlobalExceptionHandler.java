@@ -22,4 +22,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.valueOf(exception.getStatusCode())).body(errorMessage);
 
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(final RuntimeException exception){
+        log.error("Exception caught in handleMovieInfoServerException: {}", exception.getMessage(), exception);
+        var errorMessage = exception.getMessage();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
+
+    }
 }
